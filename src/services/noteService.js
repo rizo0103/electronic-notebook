@@ -4,6 +4,10 @@ export const getAllNotes = async () => {
     return await db.notes.toArray();
 };
 
+export const getNoteById = async (id) => {
+    return await db.notes.get(id);
+};
+
 export const addNote = async (setNotes) => {
     try {
         const timestamp = Date.now();
