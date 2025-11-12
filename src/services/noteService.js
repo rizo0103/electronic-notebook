@@ -8,7 +8,7 @@ export const getNoteById = async (id) => {
     return await db.notes.get(id);
 };
 
-export const addNote = async (setNotes) => {
+export const addNote = async () => {
     try {
         const timestamp = Date.now();
         const id = await db.notes.add({
@@ -17,8 +17,6 @@ export const addNote = async (setNotes) => {
             createdAt: timestamp,
             updatedAt: timestamp,
         });
-
-        setNotes(await getAllNotes());
     
         return id;
     } catch (error) {
@@ -48,17 +46,17 @@ export const renameNote = async (id, newTitle) => {
         });
 
         return "ok";
-    } catch (error) {
+    }
+ catch (error) {
         console.error("Failed to rename note:", error);
         
         return "not ok";
     }
 };
 
-export const deleteNote = async (id, setNotes) => {
+export const deleteNote = async (id) => {
     try {
         await db.notes.delete(id);
-        setNotes(await getAllNotes());
         return "ok";
     } catch (error) {
         console.error("Failed to delete note:", error);

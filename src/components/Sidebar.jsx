@@ -1,23 +1,32 @@
-import React, { useEffect, useState } from 'react'
+// src/components/Sidebar.jsx
+import React from 'react';
 import NoteList from './NoteList';
-import { addNote, getAllNotes } from '../services/noteService';
 
-const Sidebar = ({ activeNoteId, setActiveNoteId }) => {
-    const [ notes, setNotes ] = useState([]);
+const Sidebar = ({
+    notes,
+    activeNoteId,
+    setActiveNoteId,
+    onAddNote,
+    onDeleteNote,
+    onRenameNote
+}) => {
 
-    const getNotes = async () => {
-        setNotes(await getAllNotes());
-    }
-
-    useEffect(() => {
-        getNotes();
-    }, []);
+    const handleAddNote = async () => {
+        const newNoteId = await onAddNote();
+        setActiveNoteId(newNoteId); // Select the new note
+    };
 
     return (
         <aside className='sidebar'>
-            <h2> Notebook </h2>
-            <button className='add-btn' onClick={() => addNote(setNotes)}> + Add Note </button>
-            <NoteList notes={notes} setNotes={setNotes} activeNoteId={activeNoteId} setActiveNoteId={setActiveNoteId} />
+            <h2 className='logo'>Notebook</h2>
+            <button className='add-btn' onClick={handleAddNote}>+ New Note</button>
+            <NoteList
+                notes={notes}
+                activeNoteId={activeNoteId}
+                setActiveNoteId={setActiveNoteId}
+                onDeleteNote={onDeleteNote}
+                onRenameNote={onRenameNote}
+            />
         </aside>
     );
 };

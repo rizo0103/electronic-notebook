@@ -1,24 +1,49 @@
-import React, { useState } from 'react';
-import { deleteNote, renameNote } from '../services/noteService';
+// src/components/NoteList.jsx
+import React from 'react';
 
-const NoteList = ({ notes, setNotes, activeNoteId, setActiveNoteId }) => {
-    const [ renaimingNoteId, setRenamingNoteId ] = useState(null);
-
-    const selectNote = (note) => {
-        setActiveNoteId(note.id);
-    };
+const NoteList = ({
+    notes,
+    activeNoteId,
+    setActiveNoteId,
+    onDeleteNote,
+    onRenameNote
+}) => {
 
     return (
         <div className='note-list'>
             {notes.length > 0 ? (
                 notes.map(note => (
-                    <div key={note.id} className={`note-item ${activeNoteId === note.id ? "active" : ""}`} onClick={() => selectNote(note)} onDoubleClick={() => renameNote(note)}>
-                        <span onDoubleClick={() => setRenamingNoteId(note.id)} contentEditable={renaimingNoteId && renaimingNoteId === note.id}> {note.title || "Untitled"} </span>
-                        <div onClick={async () => await deleteNote(note.id, setNotes)}> 🗑 </div>
+                    <div
+                        key={note.id}
+                        className={`note-item ${activeNoteId === note.id ? "active" : ""}`}
+                        onClick={() => setActiveNoteId(note.id)}
+                        onDoubleClick={() => onRenameNote(note.id, note.title)}
+                    >
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                            <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: "75%" }}>
+                                {note.title || "Untitled"}
+                            </span>
+                            <button
+                                onClick={(e) => {
+                                    e.stopPropagation(); // Prevent note selection
+                                    onDeleteNote(note.id);
+                                }}
+                                style={{
+                                    background: "transparent",
+                                    border: "none",
+                                    cursor: "pointer",
+                                    color: activeNoteId === note.id ? "#fff" : "#666",
+                                    fontSize: "14px",
+                                }}
+                                title="Delete note"
+                            >
+                                🗑
+                            </button>
+                        </div>
                     </div>
                 ))
             ) : (
-                <p> It's time to create new note... </p>
+                <div className="empty-list">No notes yet. Create one!</div>
             )}
         </div>
     );

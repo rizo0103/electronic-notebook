@@ -1,22 +1,41 @@
-/* eslint-disable react-hooks/exhaustive-deps */
-import React, { useEffect, useState } from 'react';
-import { getNoteById } from '../services/noteService';
+// src/components/Editor.jsx
+import React, { useState, useEffect } from 'react';
+import { updateNote } from '../services/noteService';
 
-const Editor = ({ id }) => {
-    const [ content, setContent ] = useState("");
-
-    const getNoteData = async () => {
-        setContent(await getNoteById(id).content);
-    };
+const Editor = ({ activeNote, onNoteUpdate }) => {
+    const [content, setContent] = useState('');
 
     useEffect(() => {
-        getNoteData();
-    }, []);
+        // When the active note changes, update the editor's content
+        setContent(activeNote ? activeNote.content : '');
+    }, [activeNote]);
+
+    const handleSave = async () => {
+        if (!activeNote) return;
+
+        await updateNote(activeNote.id, { content });
+        // Notify the parent component that a note has been updated
+        // so the sidebar can refresh its timestamps.
+        if (onNoteUpdate) {
+            onNoteUpdate();
+        }
+    };
+
+    if (!activeNote) {
+        return <div className="editor empty">Select or create a note to get started.</div>;
+    }
 
     return (
         <section className='editor'>
-            <textarea placeholder={id ? "Write your note..." : "Select or create a note"} className="note-editor" value={content} onChange={(e) => setContent(e.target.value)} />
-            <button className='save-btn'>Save</button>
+            <textarea
+                className="note-editor"
+                value={content}
+                onChange={(e) => setContent(e.target.value)}
+                placeholder="Write your note here..."
+            />
+            <button className='save-btn' onClick={handleSave} title="Save">
+                Save
+            </button>
         </section>
     );
 };
