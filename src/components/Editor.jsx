@@ -27,6 +27,14 @@ const Editor = ({ activeNote, onNoteUpdate }) => {
 
     return (
         <section className='editor'>
+            <div className="editor-toolbar">
+                <button className="tool-btn active" title='Text mode'>📝</button>
+                <button className="tool-btn" title='Handwriting mode'>✍️</button>
+                <button className="tool-btn" title='Color picker'>🎨</button>
+                <button className="tool-btn" title='Eraser'>🧽</button>
+                <button className="tool-btn" title='Undo'>↩️</button>
+                <button className="tool-btn" title='Redo'>↪️</button>
+            </div>
             <textarea
                 className="note-editor"
                 value={content}
