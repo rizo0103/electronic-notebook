@@ -4,88 +4,13 @@ import { useState, useEffect } from "react";
 import "./App.css";
 import { db } from "./db";
 import Sidebar from "./components/Sidebar";
+import Editor from "./components/Editor";
 
 function App() {
-    const [notes, setNotes] = useState([]);
-	const [activeNote, setActiveNote] = useState(null);
-	const [text, setText] = useState("");
-
-	// Load notes from Dexie (newest first)
-	useEffect(() => {
-		const loadNotes = async () => {
-			const all = await db.notes.orderBy("updatedAt").reverse().toArray();
-			setNotes(all);
-		};
-		loadNotes();
-	}, []);
-
-	// helper to refresh local state from DB
-	const refreshNotes = async (selectId = null) => {
-		const all = await db.notes.orderBy("updatedAt").reverse().toArray();
-		setNotes(all);
-		if (selectId !== null) setActiveNote(selectId);
-		// if the selected note was removed, clear editor
-		if (selectId === null && activeNote === null) setText("");
-	};
-
-	const addNote = async () => {
-		const timestamp = Date.now();
-		const id = await db.notes.add({
-			title: "Untitled",
-			content: "",
-			createdAt: timestamp,
-			updatedAt: timestamp,
-		});
-		// reload notes and select the new one
-		const all = await db.notes.orderBy("updatedAt").reverse().toArray();
-		setNotes(all);
-		setActiveNote(id);
-		setText("");
-	};
-
-	const saveNote = async () => {
-		if (!activeNote) return;
-		const now = Date.now();
-		await db.notes.update(activeNote, {
-			content: text,
-			updatedAt: now,
-		});
-		// refresh notes so order and timestamps are up-to-date
-		const all = await db.notes.orderBy("updatedAt").reverse().toArray();
-		setNotes(all);
-	};
-
-	const deleteNote = async (id) => {
-		const confirmed = confirm("Delete this note?");
-		if (!confirmed) return;
-		await db.notes.delete(id);
-		// if deleted note was active, clear editor
-		if (id === activeNote) {
-			setActiveNote(null);
-			setText("");
-		}
-		const all = await db.notes.orderBy("updatedAt").reverse().toArray();
-		setNotes(all);
-	};
-
-	const selectNote = async (note) => {
-		setActiveNote(note.id);
-		setText(note.content || "");
-	};
-
-	const renameNote = async (note) => {
-		const newTitle = prompt("Rename note:", note.title || "Untitled");
-		if (newTitle === null) return; // cancelled
-		await db.notes.update(note.id, {
-			title: newTitle,
-			updatedAt: Date.now(),
-		});
-		const all = await db.notes.orderBy("updatedAt").reverse().toArray();
-		setNotes(all);
-	};
+    const [ activeNoteId, setActiveNoteId ] = useState(null);
 
   return (
-        <div className="app-container">
+        <main className="app-container">
             {/* <aside className="sidebar">
                 <h2 className="logo">Notebook</h2>
                 <button className="add-btn" onClick={addNote}>+ New Note</button>
@@ -146,8 +71,9 @@ function App() {
                     <div className="empty">Select or create a note</div>
                 )}
             </main> */}
-            <Sidebar />
-        </div>
+            <Sidebar setActiveNoteId={setActiveNoteId} activeNoteId={activeNoteId} />
+            <Editor id={activeNoteId} />
+        </main>
     );
 }
 
