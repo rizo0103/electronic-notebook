@@ -1,6 +1,7 @@
 // src/components/Editor.jsx
 import React, { useState, useEffect } from 'react';
 import { updateNote } from '../services/noteService';
+import HandwritingCanvas from './HandwritingCanvas';
 
 const Editor = ({ activeNote, onNoteUpdate }) => {
     const [content, setContent] = useState('');
@@ -35,12 +36,13 @@ const Editor = ({ activeNote, onNoteUpdate }) => {
                 <button className="tool-btn" title='Undo'>↩️</button>
                 <button className="tool-btn" title='Redo'>↪️</button>
             </div>
-            <textarea
+            {/* <textarea
                 className="note-editor"
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
                 placeholder="Write your note here..."
-            />
+            /> */}
+            <HandwritingCanvas className="note-editor" />
             <button className='save-btn' onClick={handleSave} title="Save">
                 Save
             </button>
