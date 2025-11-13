@@ -62,6 +62,7 @@ html,
 
 .note-item {
     display: flex;
+    flex-direction: column;
     background: #fafafa;
     padding: 12px;
     margin-bottom: 8px;
