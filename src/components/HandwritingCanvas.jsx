@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 // src/components/HandwritingCanvas.jsx
 import React, { useEffect, useRef, useState } from 'react';
 import { saveCanvas } from '../services/noteService';
