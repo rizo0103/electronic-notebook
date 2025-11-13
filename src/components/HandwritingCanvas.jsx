@@ -7,6 +7,10 @@ const HandwritingCanvas = ({ className, content, onNoteUpdate, noteId }) => {
     const canvasRef = useRef(null);
     const [isDrawing, setIsDrawing] = useState(false);
     const [ctx, setCtx] = useState(null);
+    const [mode, setMode] = useState("Text mode");
+    const [cursorPos, setCursorPos] = useState({ x: 0, y: 0 });
+    const [showCursor, setShowCursor] = useState(false);
+    const [penSize, setPenSize] = useState(5);
 
     // Function to set canvas size and context properties
     const setupCanvas = () => {
@@ -33,7 +37,7 @@ const HandwritingCanvas = ({ className, content, onNoteUpdate, noteId }) => {
         };
 
         context.lineCap = "round";
-        context.lineWidth = 5;
+        context.lineWidth = penSize;
         context.strokeStyle = "#000";
         
         setCtx(context);
@@ -64,6 +68,10 @@ const HandwritingCanvas = ({ className, content, onNoteUpdate, noteId }) => {
     const startDrawing = (e) => {
         e.preventDefault();
         if (!ctx) return;
+        setCursorPos({
+            x: e.clientX,
+            y: e.clientY,
+        });
         const { x, y } = getPosition(e);
         ctx.beginPath();
         ctx.moveTo(x, y);
@@ -74,6 +82,19 @@ const HandwritingCanvas = ({ className, content, onNoteUpdate, noteId }) => {
         if (!isDrawing || !ctx) return;
         e.preventDefault();
         const { x, y } = getPosition(e);
+        setCursorPos({
+            x: e.clientX,
+            y: e.clientY,
+        });
+        if (mode === "Handwriting mode") {
+            ctx.globalCompositeOperation = "source-over";
+            setPenSize(5);
+        } else if (mode === "Eraser") {
+            ctx.globalCompositeOperation = "destination-out";
+            setPenSize(100);
+        }
+
+        ctx.lineWidth = penSize;
         ctx.lineTo(x, y);
         ctx.stroke();
     };
@@ -94,14 +115,27 @@ const HandwritingCanvas = ({ className, content, onNoteUpdate, noteId }) => {
     
     return (
         <section className='editor'>
+            {showCursor && (
+                <div className="eraser-cursor"
+                    style={{
+                        width: `${penSize}px`,
+                        height: `${penSize}px`,
+                        left: `${cursorPos.x}px`,
+                        top: `${cursorPos.y}px`,
+                        transform: 'translate(-50%, -50%)',
+                    }}
+                >
+
+                </div>
+            )}
             <div className="editor-toolbar">
-                <button className="tool-btn active" title='Text mode'> 📝 </button>
-                <button className="tool-btn" title='Handwriting mode'> ✍️ </button>
-                <button className="tool-btn" title='Color picker'> 🎨 </button>
-                <button className="tool-btn" title='Eraser'> 🧽 </button>
+                <button className={`tool-btn ${mode === "Text mode" ? 'active' : ''}`} title='Text mode' onClick={() => {setMode("Text mode"); setShowCursor(false)} }> 📝 </button>
+                <button className={`tool-btn ${mode === "Handwriting mode" ? 'active' : ''}`} title='Handwriting mode' onClick={() => {setMode("Handwriting mode"); setShowCursor(false)}}> ✍️ </button>
+                <button className={`tool-btn ${mode === "Color picker" ? 'active' : ''}`} title='Color picker' onClick={() => {setMode("Color picker"); setShowCursor(false)}}> 🎨 </button>
+                <button className={`tool-btn ${mode === "Eraser" ? 'active' : ''}`} title='Eraser' onClick={() => {setMode("Eraser"); setShowCursor(true)}}> 🧽 </button>
                 <button className="tool-btn" title='Undo'> ↩️ </button>
                 <button className="tool-btn" title='Redo'> ↪️ </button>
-                <button className='tool-btn' onClick={handleSave} title="Save"> Save </button>
+                <button className="tool-btn" onClick={handleSave} title="Save"> Save </button>
             </div>
             
             <canvas 
@@ -111,6 +145,10 @@ const HandwritingCanvas = ({ className, content, onNoteUpdate, noteId }) => {
                 onMouseDown={startDrawing}
                 onMouseMove={draw}
                 onMouseUp={stopDrawing}
+                onMouseEnter={(e) => setCursorPos({
+                    x: e.clientX,
+                    y: e.clientY,
+                })}
                 onMouseLeave={stopDrawing}
                 onTouchStart={startDrawing}
                 onTouchMove={draw}
