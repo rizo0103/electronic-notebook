@@ -1,7 +1,8 @@
 // src/components/HandwritingCanvas.jsx
 import React, { useEffect, useRef, useState } from 'react';
+import { saveCanvas } from '../services/noteService';
 
-const HandwritingCanvas = ({ className }) => {
+const HandwritingCanvas = ({ className, content, onNoteUpdate, noteId }) => {
     const canvasRef = useRef(null);
     const [isDrawing, setIsDrawing] = useState(false);
     const [ctx, setCtx] = useState(null);
@@ -11,20 +12,32 @@ const HandwritingCanvas = ({ className }) => {
         const canvas = canvasRef.current;
         const context = canvas.getContext("2d");
 
-        // Get the display size of the canvas
-        const rect = canvas.getBoundingClientRect();
+        // Save current content
+        let data = canvas.toDataURL();
 
-        // Set the canvas attributes to match its display size
+        if (content) {
+            data = content;
+        }
+
+        // Update canvas size
+        const rect = canvas.getBoundingClientRect();
         canvas.width = rect.width;
         canvas.height = rect.height;
 
-        // Re-apply context settings after resize
+        // Restore content
+        const img = new Image();
+        img.src = data;
+        img.onload = () => {
+            context.drawImage(img, 0, 0, canvas.width, canvas.height);
+        };
+
         context.lineCap = "round";
-        context.lineWidth = 5; // Increased for better visibility
+        context.lineWidth = 5;
         context.strokeStyle = "#000";
         
         setCtx(context);
     };
+
 
     // Setup canvas on mount and on window resize
     useEffect(() => {
@@ -70,22 +83,41 @@ const HandwritingCanvas = ({ className }) => {
         ctx.closePath();
         setIsDrawing(false);
     };
+
+    const handleSave = async () => {
+        await saveCanvas(noteId, canvasRef.current);
+        if (onNoteUpdate) {
+            onNoteUpdate();
+        }
+    };
     
     return (
-        <canvas 
-            ref={canvasRef}
-            className={className} // Use the passed className
-            style={{ touchAction: "none", display: 'block' }} // Ensure it behaves like a block
-            onMouseDown={startDrawing}
-            onMouseMove={draw}
-            onMouseUp={stopDrawing}
-            onMouseLeave={stopDrawing}
-            onTouchStart={startDrawing}
-            onTouchMove={draw}
-            onTouchEnd={stopDrawing}
-            onTouchCancel={stopDrawing}
-        >
-        </canvas>
+        <section className='editor'>
+            <div className="editor-toolbar">
+                <button className="tool-btn active" title='Text mode'> 📝 </button>
+                <button className="tool-btn" title='Handwriting mode'> ✍️ </button>
+                <button className="tool-btn" title='Color picker'> 🎨 </button>
+                <button className="tool-btn" title='Eraser'> 🧽 </button>
+                <button className="tool-btn" title='Undo'> ↩️ </button>
+                <button className="tool-btn" title='Redo'> ↪️ </button>
+                <button className='tool-btn' onClick={handleSave} title="Save"> Save </button>
+            </div>
+            
+            <canvas 
+                ref={canvasRef}
+                className={className} // Use the passed className
+                style={{ touchAction: "none", display: 'block' }} // Ensure it behaves like a block
+                onMouseDown={startDrawing}
+                onMouseMove={draw}
+                onMouseUp={stopDrawing}
+                onMouseLeave={stopDrawing}
+                onTouchStart={startDrawing}
+                onTouchMove={draw}
+                onTouchEnd={stopDrawing}
+                onTouchCancel={stopDrawing}
+            />
+
+        </section>
     );
 };
 

@@ -64,4 +64,7 @@ export const deleteNote = async (id) => {
     }
 };
 
-console.log("noteService.js loaded");
+export const saveCanvas = async (noteId, canvas) => {
+    const dataURL = canvas.toDataURL();
+    return await updateNote(noteId, { content: dataURL });
+}

@@ -1,22 +1,14 @@
 // src/components/Editor.jsx
-import React, { useState, useEffect } from 'react';
-import { updateNote } from '../services/noteService';
+import React from 'react';
 import HandwritingCanvas from './HandwritingCanvas';
 
 const Editor = ({ activeNote, onNoteUpdate }) => {
-    const [content, setContent] = useState('');
-
-    useEffect(() => {
-        // When the active note changes, update the editor's content
-        setContent(activeNote ? activeNote.content : '');
-    }, [activeNote]);
 
     const handleSave = async () => {
         if (!activeNote) return;
-
-        await updateNote(activeNote.id, { content });
-        // Notify the parent component that a note has been updated
-        // so the sidebar can refresh its timestamps.
+        // The logic to get canvas data and save will be added here later
+        console.log("Save button clicked");
+        // Example: await updateNote(activeNote.id, { content: canvasData });
         if (onNoteUpdate) {
             onNoteUpdate();
         }
@@ -27,26 +19,12 @@ const Editor = ({ activeNote, onNoteUpdate }) => {
     }
 
     return (
-        <section className='editor'>
-            <div className="editor-toolbar">
-                <button className="tool-btn active" title='Text mode'>📝</button>
-                <button className="tool-btn" title='Handwriting mode'>✍️</button>
-                <button className="tool-btn" title='Color picker'>🎨</button>
-                <button className="tool-btn" title='Eraser'>🧽</button>
-                <button className="tool-btn" title='Undo'>↩️</button>
-                <button className="tool-btn" title='Redo'>↪️</button>
-            </div>
-            {/* <textarea
+            <HandwritingCanvas
                 className="note-editor"
-                value={content}
-                onChange={(e) => setContent(e.target.value)}
-                placeholder="Write your note here..."
-            /> */}
-            <HandwritingCanvas className="note-editor" />
-            <button className='save-btn' onClick={handleSave} title="Save">
-                Save
-            </button>
-        </section>
+                key={activeNote.id} // Re-mount canvas when note changes
+                content={activeNote.content}
+                noteId={activeNote.id}
+            />
     );
 };
 
