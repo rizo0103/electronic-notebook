@@ -8,6 +8,7 @@ const HandwritingCanvas = ({ className, content, onNoteUpdate, noteId }) => {
     const [isDrawing, setIsDrawing] = useState(false);
     const [ctx, setCtx] = useState(null);
     const [mode, setMode] = useState("Handwriting mode");
+    const [compositeOperation, setCompositeOperation] = useState('source-over');
     const [cursorPos, setCursorPos] = useState({ x: 0, y: 0 });
     const [showCursor, setShowCursor] = useState(false);
     const [penSize, setPenSize] = useState(5);
@@ -32,6 +33,7 @@ const HandwritingCanvas = ({ className, content, onNoteUpdate, noteId }) => {
         context.lineCap = "round";
         context.lineWidth = penSize;
         context.strokeStyle = "#000";
+        context.globalCompositeOperation = compositeOperation;
         
         setCtx(context);
     };
@@ -58,15 +60,7 @@ const HandwritingCanvas = ({ className, content, onNoteUpdate, noteId }) => {
     const startDrawing = (e) => {
         e.preventDefault();
         if (!ctx) return;
-
-        if (mode === "Handwriting mode") {
-            ctx.globalCompositeOperation = "source-over";
-            setPenSize(5);
-        } else if (mode === "Eraser") {
-            ctx.globalCompositeOperation = "destination-out";
-            setPenSize(30); // A more reasonable eraser size
-        }
-
+        ctx.globalCompositeOperation = compositeOperation;
         const { x, y } = getPosition(e);
         ctx.beginPath();
         ctx.moveTo(x, y);
@@ -104,6 +98,19 @@ const HandwritingCanvas = ({ className, content, onNoteUpdate, noteId }) => {
             onNoteUpdate();
         }
     };
+
+    const handleToolbarButtonClick = (e) => {
+        setMode(e.target.title);
+
+        if (e.target.title === "Handwriting mode") {
+            console.log("ok");
+            setCompositeOperation("source-over");
+            setPenSize(5);
+        } else if (e.target.title === "Eraser") {
+            setCompositeOperation("destination-out");
+            setPenSize(30); // A more reasonable eraser size
+        }
+    };
     
     return (
         <section className='editor'>
@@ -120,8 +127,8 @@ const HandwritingCanvas = ({ className, content, onNoteUpdate, noteId }) => {
                 </div>
             )}
             <div className="editor-toolbar">
-                <button className={`tool-btn ${mode === "Handwriting mode" ? 'active' : ''}`} title='Handwriting mode' onClick={() => setMode("Handwriting mode")}>✍️</button>
-                <button className={`tool-btn ${mode === "Eraser" ? 'active' : ''}`} title='Eraser' onClick={() => setMode("Eraser")}>🧽</button>
+                <button className={`tool-btn ${mode === "Handwriting mode" ? 'active' : ''}`} title='Handwriting mode' onClick={handleToolbarButtonClick}>✍️</button>
+                <button className={`tool-btn ${mode === "Eraser" ? 'active' : ''}`} title='Eraser' onClick={handleToolbarButtonClick}>🧽</button>
                 <button className="tool-btn" title='Undo'>↩️</button>
                 <button className="tool-btn" title='Redo'>↪️</button>
                 <button className="tool-btn" onClick={handleSave} title="Save">Save</button>
