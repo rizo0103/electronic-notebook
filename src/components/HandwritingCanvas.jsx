@@ -14,6 +14,9 @@ const HandwritingCanvas = ({ className, content, noteId }) => {
     const [ mode, setMode ] = useState(modes[0]);
     const [ showCursor, setShowCursor ] = useState(false);
     const [ cursorPos, setCursorPos ] = useState({ x: 0, y: 0 });
+    const [ history, setHistory ] = useState(content ? [content] : []);
+    const [ historyStep, setHistoryStep ] = useState(content ? 0 : -1);
+    const [ penColor, setPenColor ] = useState("#000000"); 
 
     const loadImage = (ctx, content) => {
         const image = new Image();
@@ -45,14 +48,24 @@ const HandwritingCanvas = ({ className, content, noteId }) => {
 
     const startDrawing = (e) => {
         if (!ctx) return;
+   
+        const snap = canvasRef.current.toDataURL();
         
+        setHistory(prev => {
+            const newHistory = [...prev.slice(0, historyStep + 1), snap];
+
+            setHistoryStep(newHistory.length - 1);
+            return newHistory;
+        });
+
         setIsDrawing(true);
     
         const { x, y } = getPosition(e);
-
+        
+        ctx.strokeStyle = penColor;
+        ctx.lineWidth = penSize;
         ctx.beginPath();
         ctx.moveTo(x, y);
-        ctx.lineWidth = penSize;
         ctx.lineTo(x, y);
     };
 
@@ -87,13 +100,13 @@ const HandwritingCanvas = ({ className, content, noteId }) => {
     const handleToolbarButtonClick = (title) => {
         setMode(title);
         if (title === modes[0]) {
-            ctx.globalCompositeOperation = 'source-over';
             setPenSize(5);
             setShowCursor(false);
+            setPenColor("#000000");
         } else if (title === modes[1]) {
-            ctx.globalCompositeOperation = 'destination-out';
             setPenSize(20);
             setShowCursor(true);
+            setPenColor("#ffffff");
         }
     };
     
@@ -103,21 +116,36 @@ const HandwritingCanvas = ({ className, content, noteId }) => {
         }
 
         draw(e);
-    }
+    };
+
+    const undo = () => {
+        if (historyStep <= 0) return ;
+
+        const newStep = historyStep - 1;
+        const img = new Image();
+
+        img.onload = () => {
+            ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
+            ctx.drawImage(img, 0, 0);
+        }
+
+        img.src = history[newStep];
+        setHistoryStep(newStep);
+    };
 
     useEffect(() => {
         setupCanvas();
     }, []);
 
     return (
-        <section className={className}>
+        <section className='editor'>
             {showCursor && (
                 <div className="eraser-cursor" style={{ width: `${penSize}px`, height: `${penSize}px`, left: `${cursorPos.x}px`, top: `${cursorPos.y}px` }}></div>
             )}
             <div className="editor-toolbar">
                 <button className={`tool-btn ${mode === modes[0] ? 'active' : ''}`} title={modes[0]} onClick={() => handleToolbarButtonClick(modes[0])}> <VscEdit /> </button>
                 <button className={`tool-btn ${mode === modes[1] ? 'active' : ''}`} title={modes[1]} onClick={() => handleToolbarButtonClick(modes[1])}> <VscSymbolField /> </button>
-                <button className="tool-btn"> <VscDiscard /> </button>
+                <button className="tool-btn" onClick={undo}> <VscDiscard /> </button>
                 <button className="tool-btn"> <VscRedo /> </button>
             </div>
             <canvas
