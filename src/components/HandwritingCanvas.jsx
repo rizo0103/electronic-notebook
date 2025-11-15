@@ -8,32 +8,32 @@ const modes = ['Handwriting', 'Eraser'];
 const HandwritingCanvas = ({ className, content, noteId }) => {
     const canvasRef = useRef(null);
 
-    const [ ctx, setCtx ] = useState(null);
-    const [ isDrawing, setIsDrawing ] = useState(false);
-    const [ penSize, setPenSize ] = useState(5);
-    const [ mode, setMode ] = useState(modes[0]);
-    const [ showCursor, setShowCursor ] = useState(false);
-    const [ cursorPos, setCursorPos ] = useState({ x: 0, y: 0 });
-    const [ history, setHistory ] = useState(content ? [content] : []);
-    const [ historyStep, setHistoryStep ] = useState(content ? 0 : -1);
-    const [ penColor, setPenColor ] = useState("#000000"); 
+    const [ctx, setCtx] = useState(null);
+    const [isDrawing, setIsDrawing] = useState(false);
+    const [penSize, setPenSize] = useState(5);
+    const [mode, setMode] = useState(modes[0]);
+    const [showCursor, setShowCursor] = useState(false);
+    const [cursorPos, setCursorPos] = useState({ x: 0, y: 0 });
+    const [history, setHistory] = useState(content ? [content] : []);
+    const [historyStep, setHistoryStep] = useState(content ? 0 : -1);
+    const [penColor, setPenColor] = useState("#000000");
 
     const loadImage = (ctx, content) => {
         const image = new Image();
-        
+
         image.onload = () => {
             ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
             ctx.drawImage(image, 0, 0);
         };
-        
+
         image.src = content;
     };
 
     const setupCanvas = () => {
         const canvas = canvasRef.current,
-              context = canvas.getContext('2d'),
-              rect = canvas.getBoundingClientRect();
-        
+            context = canvas.getContext('2d'),
+            rect = canvas.getBoundingClientRect();
+
         canvas.width = rect.width;
         canvas.height = rect.height;
 
@@ -48,9 +48,9 @@ const HandwritingCanvas = ({ className, content, noteId }) => {
 
     const startDrawing = (e) => {
         if (!ctx) return;
-   
+
         const snap = canvasRef.current.toDataURL();
-        
+
         setHistory(prev => {
             const newHistory = [...prev.slice(0, historyStep + 1), snap];
 
@@ -59,9 +59,9 @@ const HandwritingCanvas = ({ className, content, noteId }) => {
         });
 
         setIsDrawing(true);
-    
+
         const { x, y } = getPosition(e);
-        
+
         ctx.strokeStyle = penColor;
         ctx.lineWidth = penSize;
         ctx.beginPath();
@@ -71,7 +71,7 @@ const HandwritingCanvas = ({ className, content, noteId }) => {
 
     const draw = (e) => {
         if (!isDrawing || !ctx) return;
-        
+
         const { x, y } = getPosition(e);
 
         ctx.lineTo(x, y);
@@ -83,13 +83,13 @@ const HandwritingCanvas = ({ className, content, noteId }) => {
         setIsDrawing(false);
 
         ctx.closePath();
-        saveCanvas(noteId, canvasRef.current);
+        saveCanvas(noteId, canvasRef.current.toDataURL());
     };
 
     const getPosition = (e) => {
         const rect = canvasRef.current.getBoundingClientRect();
         const clientX = e.touches ? e.touches[0].clientX : e.clientX,
-              clientY = e.touches ? e.touches[0].clientY : e.clientY; 
+            clientY = e.touches ? e.touches[0].clientY : e.clientY;
 
         return {
             x: clientX - rect.left,
@@ -109,7 +109,7 @@ const HandwritingCanvas = ({ className, content, noteId }) => {
             setPenColor("#ffffff");
         }
     };
-    
+
     const handleMouseMove = (e) => {
         if (mode === "Eraser") {
             setCursorPos({ x: e.clientX, y: e.clientY })
@@ -121,7 +121,7 @@ const HandwritingCanvas = ({ className, content, noteId }) => {
     const undo = () => {
         if (historyStep <= 0) return ;
 
-        const newStep = historyStep - 1;
+        const newStep = historyStep;
         const img = new Image();
 
         img.onload = () => {
@@ -130,7 +130,9 @@ const HandwritingCanvas = ({ className, content, noteId }) => {
         }
 
         img.src = history[newStep];
-        setHistoryStep(newStep);
+        setHistoryStep(newStep - 1);
+    
+        saveCanvas(noteId, img.src);
     };
 
     useEffect(() => {
@@ -152,14 +154,8 @@ const HandwritingCanvas = ({ className, content, noteId }) => {
                 style={{ touchAction: "none" }}
                 className={className}
                 ref={canvasRef}
-                onMouseDown={startDrawing}
-                onMouseMove={handleMouseMove}
-                onMouseUp={stopDrawing}
-                onTouchStart={startDrawing}
-                onTouchMove={draw}
-                onTouchEnd={stopDrawing}
                 onPointerDown={startDrawing}
-                onPointerMove={draw}
+                onPointerMove={handleMouseMove}
                 onPointerUp={stopDrawing}
             ></canvas>
         </section>
