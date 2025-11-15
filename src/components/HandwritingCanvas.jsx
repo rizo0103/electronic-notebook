@@ -99,7 +99,7 @@ const HandwritingCanvas = ({ className, content, noteId }) => {
         <section className={className}>
             <div className="editor-toolbar">
                 <button className={`tool-btn ${mode === modes[0] ? 'active' : ''}`} title={modes[0]} onClick={() => handleToolbarButtonClick(modes[0])}> <VscEdit /> </button>
-                <button className={`tool-btn ${mode === modes[1] ? 'active' : ''}`} title={modes[1]} onClick={() => handleToolbarButtonClick(modes[1])}> <VscSymbolField color='pink' /> </button>
+                <button className={`tool-btn ${mode === modes[1] ? 'active' : ''}`} title={modes[1]} onClick={() => handleToolbarButtonClick(modes[1])}> <VscSymbolField /> </button>
                 <button className="tool-btn"> <VscDiscard /> </button>
                 <button className="tool-btn"> <VscRedo /> </button>
             </div>
