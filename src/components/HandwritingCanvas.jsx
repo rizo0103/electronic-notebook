@@ -120,10 +120,16 @@ const HandwritingCanvas = ({ className, content, noteId }) => {
                 <button className="tool-btn"> <VscDiscard /> </button>
                 <button className="tool-btn"> <VscRedo /> </button>
             </div>
-            <canvas 
+            <canvas
+                style={{ touchAction: "none" }}
                 className={className}
                 ref={canvasRef}
+                onMouseDown={startDrawing}
                 onMouseMove={handleMouseMove}
+                onMouseUp={stopDrawing}
+                onTouchStart={startDrawing}
+                onTouchMove={draw}
+                onTouchEnd={stopDrawing}
                 onPointerDown={startDrawing}
                 onPointerMove={draw}
                 onPointerUp={stopDrawing}
