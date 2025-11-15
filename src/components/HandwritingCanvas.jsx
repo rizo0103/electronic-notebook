@@ -1,11 +1,27 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import React, { useEffect, useRef, useState } from 'react'
 import { VscDiscard, VscEdit, VscRedo, VscSymbolField } from 'react-icons/vsc';
+import { saveCanvas } from '../services/noteService';
 
-const HandwritingCanvas = ({ className, content }) => {
+const modes = ['Handwriting', 'Eraser'];
+
+const HandwritingCanvas = ({ className, content, noteId }) => {
     const canvasRef = useRef(null);    
     const [ ctx, setCtx ] = useState(null);
     const [ isDrawing, setIsDrawing ] = useState(false);
     const [ penSize, setPenSize ] = useState(5);
+    const [ mode, setMode ] = useState(modes[0]);
+
+    const loadImage = (ctx, content) => {
+        const image = new Image();
+        
+        image.onload = () => {
+            ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
+            ctx.drawImage(image, 0, 0);
+        };
+        
+        image.src = content;
+    };
 
     const setupCanvas = () => {
         const canvas = canvasRef.current,
@@ -21,6 +37,7 @@ const HandwritingCanvas = ({ className, content }) => {
         context.globalCompositeOperation = 'source-over';
 
         setCtx(context);
+        loadImage(context, content);
     };
 
     const startDrawing = (e) => {
@@ -32,7 +49,7 @@ const HandwritingCanvas = ({ className, content }) => {
 
         ctx.beginPath();
         ctx.moveTo(x, y);
-
+        ctx.lineWidth = penSize;
     };
 
     const draw = (e) => {
@@ -49,6 +66,7 @@ const HandwritingCanvas = ({ className, content }) => {
         setIsDrawing(false);
 
         ctx.closePath();
+        saveCanvas(noteId, canvasRef.current);
     };
 
     const getPosition = (e) => {
@@ -62,6 +80,17 @@ const HandwritingCanvas = ({ className, content }) => {
         }
     };
 
+    const handleToolbarButtonClick = (title) => {
+        setMode(title);
+        if (title === modes[0]) {
+            ctx.globalCompositeOperation = 'source-over';
+            setPenSize(5);
+        } else if (title === modes[1]) {
+            ctx.globalCompositeOperation = 'destination-out';
+            setPenSize(20);
+        }
+    };
+
     useEffect(() => {
         setupCanvas();
     }, []);
@@ -69,8 +98,8 @@ const HandwritingCanvas = ({ className, content }) => {
     return (
         <section className={className}>
             <div className="editor-toolbar">
-                <button className="tool-btn"> <VscEdit /> </button>
-                <button className="tool-btn"> <VscSymbolField /> </button>
+                <button className={`tool-btn ${mode === modes[0] ? 'active' : ''}`} title={modes[0]} onClick={() => handleToolbarButtonClick(modes[0])}> <VscEdit /> </button>
+                <button className={`tool-btn ${mode === modes[1] ? 'active' : ''}`} title={modes[1]} onClick={() => handleToolbarButtonClick(modes[1])}> <VscSymbolField color='pink' /> </button>
                 <button className="tool-btn"> <VscDiscard /> </button>
                 <button className="tool-btn"> <VscRedo /> </button>
             </div>
