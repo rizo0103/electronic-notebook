@@ -6,11 +6,14 @@ import { saveCanvas } from '../services/noteService';
 const modes = ['Handwriting', 'Eraser'];
 
 const HandwritingCanvas = ({ className, content, noteId }) => {
-    const canvasRef = useRef(null);    
+    const canvasRef = useRef(null);
+
     const [ ctx, setCtx ] = useState(null);
     const [ isDrawing, setIsDrawing ] = useState(false);
     const [ penSize, setPenSize ] = useState(5);
     const [ mode, setMode ] = useState(modes[0]);
+    const [ showCursor, setShowCursor ] = useState(false);
+    const [ cursorPos, setCursorPos ] = useState({ x: 0, y: 0 });
 
     const loadImage = (ctx, content) => {
         const image = new Image();
@@ -50,6 +53,7 @@ const HandwritingCanvas = ({ className, content, noteId }) => {
         ctx.beginPath();
         ctx.moveTo(x, y);
         ctx.lineWidth = penSize;
+        ctx.lineTo(x, y);
     };
 
     const draw = (e) => {
@@ -85,11 +89,21 @@ const HandwritingCanvas = ({ className, content, noteId }) => {
         if (title === modes[0]) {
             ctx.globalCompositeOperation = 'source-over';
             setPenSize(5);
+            setShowCursor(false);
         } else if (title === modes[1]) {
             ctx.globalCompositeOperation = 'destination-out';
             setPenSize(20);
+            setShowCursor(true);
         }
     };
+    
+    const handleMouseMove = (e) => {
+        if (mode === "Eraser") {
+            setCursorPos({ x: e.clientX, y: e.clientY })
+        }
+
+        draw(e);
+    }
 
     useEffect(() => {
         setupCanvas();
@@ -97,6 +111,9 @@ const HandwritingCanvas = ({ className, content, noteId }) => {
 
     return (
         <section className={className}>
+            {showCursor && (
+                <div className="eraser-cursor" style={{ width: `${penSize}px`, height: `${penSize}px`, left: `${cursorPos.x}px`, top: `${cursorPos.y}px` }}></div>
+            )}
             <div className="editor-toolbar">
                 <button className={`tool-btn ${mode === modes[0] ? 'active' : ''}`} title={modes[0]} onClick={() => handleToolbarButtonClick(modes[0])}> <VscEdit /> </button>
                 <button className={`tool-btn ${mode === modes[1] ? 'active' : ''}`} title={modes[1]} onClick={() => handleToolbarButtonClick(modes[1])}> <VscSymbolField /> </button>
@@ -106,6 +123,7 @@ const HandwritingCanvas = ({ className, content, noteId }) => {
             <canvas 
                 className={className}
                 ref={canvasRef}
+                onMouseMove={handleMouseMove}
                 onPointerDown={startDrawing}
                 onPointerMove={draw}
                 onPointerUp={stopDrawing}
