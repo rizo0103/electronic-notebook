@@ -8,15 +8,16 @@ const modes = ['Handwriting', 'Eraser'];
 const HandwritingCanvas = ({ className, content, noteId }) => {
     const canvasRef = useRef(null);
 
-    const [ctx, setCtx] = useState(null);
-    const [isDrawing, setIsDrawing] = useState(false);
-    const [penSize, setPenSize] = useState(5);
-    const [mode, setMode] = useState(modes[0]);
-    const [showCursor, setShowCursor] = useState(false);
-    const [cursorPos, setCursorPos] = useState({ x: 0, y: 0 });
-    const [history, setHistory] = useState(content ? [content] : []);
-    const [historyStep, setHistoryStep] = useState(content ? 0 : -1);
-    const [penColor, setPenColor] = useState("#000000");
+    const [ ctx, setCtx ] = useState(null);
+    const [ isDrawing, setIsDrawing ] = useState(false);
+    const [ penSize, setPenSize ] = useState(5);
+    const [ mode, setMode ] = useState(modes[0]);
+    const [ showCursor, setShowCursor ] = useState(false);
+    const [ cursorPos, setCursorPos ] = useState({ x: 0, y: 0 });
+    const [ history, setHistory ] = useState(content ? [content] : []);
+    const [ historyStep, setHistoryStep ] = useState(content ? 0 : -1);
+    const [ penColor, setPenColor ] = useState("#000000");
+    const [ redoHistory, setRedoHistory ] = useState([]);
 
     const loadImage = (ctx, content) => {
         const image = new Image();
@@ -129,11 +130,53 @@ const HandwritingCanvas = ({ className, content, noteId }) => {
             ctx.drawImage(img, 0, 0);
         }
 
+        const snap = canvasRef.current.toDataURL();
+
+        setRedoHistory(prev => [
+            ...prev,
+            snap
+        ]);
+
         img.src = history[newStep];
         setHistoryStep(newStep - 1);
     
         saveCanvas(noteId, img.src);
     };
+
+    const redo = () => {
+        // if (historyStep >= 2 * history.length) return ;
+
+        // const newStep = historyStep;
+        // const img = new Image();
+
+        // img.onload = () => {
+        //     ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
+        //     ctx.drawImage(img, 0, 0);
+        // }
+
+        // img.src = history[newStep];
+        // setHistoryStep(newStep + 1);
+
+        // saveCanvas(noteId, img.src);
+        if (redoHistory && redoHistory.length > 0) {
+            const img = new Image();
+
+            img.onload = () => {
+                ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
+                ctx.drawImage(img, 0, 0);
+            }
+
+            img.src = redoHistory[redoHistory.length - 1];
+
+            setRedoHistory(prev => {
+                const newArr = [...prev];
+                newArr.pop();
+                return newArr;
+            });
+
+            saveCanvas(noteId, redoHistory[redoHistory.length - 1]);
+        }
+    }
 
     useEffect(() => {
         setupCanvas();
@@ -148,7 +191,7 @@ const HandwritingCanvas = ({ className, content, noteId }) => {
                 <button className={`tool-btn ${mode === modes[0] ? 'active' : ''}`} title={modes[0]} onClick={() => handleToolbarButtonClick(modes[0])}> <VscEdit /> </button>
                 <button className={`tool-btn ${mode === modes[1] ? 'active' : ''}`} title={modes[1]} onClick={() => handleToolbarButtonClick(modes[1])}> <VscSymbolField /> </button>
                 <button className="tool-btn" onClick={undo}> <VscDiscard /> </button>
-                <button className="tool-btn"> <VscRedo /> </button>
+                <button className="tool-btn" onClick={redo}> <VscRedo /> </button>
             </div>
             <canvas
                 style={{ touchAction: "none" }}
