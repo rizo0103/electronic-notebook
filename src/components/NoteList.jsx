@@ -1,5 +1,6 @@
 // src/components/NoteList.jsx
 import React from 'react';
+import { VscTrash } from 'react-icons/vsc';
 
 const NoteList = ({
     notes,
@@ -37,7 +38,7 @@ const NoteList = ({
                                 }}
                                 title="Delete note"
                             >
-                                🗑
+                                <VscTrash />
                             </button>
                         </div>
                     </div>
