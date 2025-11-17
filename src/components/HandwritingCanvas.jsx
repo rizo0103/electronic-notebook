@@ -99,11 +99,9 @@ const HandwritingCanvas = ({ className, content, noteId }) => {
     const handleToolbarButtonClick = (title) => {
         setMode(title);
         if (title === modes[0]) {
-            setPenSize(5);
             setShowCursor(false);
             setPenColor("#000000");
         } else if (title === modes[1]) {
-            setPenSize(20);
             setShowCursor(true);
             setPenColor("#ffffff");
         }
@@ -181,11 +179,29 @@ const HandwritingCanvas = ({ className, content, noteId }) => {
     return (
         <section className='editor'>
             {showCursor && (
-                <div className="eraser-cursor" style={{ width: `${penSize}px`, height: `${penSize}px`, left: `${cursorPos.x}px`, top: `${cursorPos.y}px` }}></div>
+                <div 
+                    className="eraser-cursor" 
+                    style={{ 
+                        position: 'absolute', 
+                        width: `${penSize}px`, 
+                        height: `${penSize}px`, 
+                        left: `${cursorPos.x}px`, 
+                        top: `${cursorPos.y}px`,
+                        pointerEvents: 'none',
+                        zIndex: 10,
+                        transition: 'width 0.1s, height 0.1s',
+                        transform: 'translate(-50%, -50%)',
+                    }}
+                ></div>
             )}
             <div className="editor-toolbar">
                 <button className={`tool-btn ${mode === modes[0] ? 'active' : ''}`} title={modes[0]} onClick={() => handleToolbarButtonClick(modes[0])}> <VscEdit /> </button>
                 <button className={`tool-btn ${mode === modes[1] ? 'active' : ''}`} title={modes[1]} onClick={() => handleToolbarButtonClick(modes[1])}> <VscSymbolField /> </button>
+                <div className="cursor-size-control">
+                    <label className="cursor-size-label">Cursor Size</label>
+                    <div className="cursor-size-value">{penSize}</div>
+                    <input type="range" min="1" max="50" value={penSize} onChange={(e) => {setPenSize(e.target.value)}} className="cursor-size-slider" />
+                </div>
                 <button className="tool-btn" onClick={undo}> <VscDiscard /> </button>
                 <button className="tool-btn" onClick={redo}> <VscRedo /> </button>
             </div>
