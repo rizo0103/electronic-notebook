@@ -14,8 +14,7 @@ const HandwritingCanvas = ({ className, content, noteId }) => {
     const [ mode, setMode ] = useState(modes[0]);
     const [ showCursor, setShowCursor ] = useState(false);
     const [ cursorPos, setCursorPos ] = useState({ x: 0, y: 0 });
-    const [ history, setHistory ] = useState(content ? [content] : []);
-    const [ historyStep, setHistoryStep ] = useState(content ? 0 : -1);
+    const [ undoHistory, setUndoHistory ] = useState(content ? [content] : []);
     const [ penColor, setPenColor ] = useState("#000000");
     const [ redoHistory, setRedoHistory ] = useState([]);
 
@@ -52,10 +51,9 @@ const HandwritingCanvas = ({ className, content, noteId }) => {
 
         const snap = canvasRef.current.toDataURL();
 
-        setHistory(prev => {
-            const newHistory = [...prev.slice(0, historyStep + 1), snap];
+        setUndoHistory(prev => {
+            const newHistory = [...prev, snap];
 
-            setHistoryStep(newHistory.length - 1);
             return newHistory;
         });
 
@@ -119,47 +117,45 @@ const HandwritingCanvas = ({ className, content, noteId }) => {
         draw(e);
     };
 
-    const undo = () => {
-        if (historyStep <= 0) return ;
+    const undo = () => {    
+        if (undoHistory && undoHistory.length > 0) {
+            const img = new Image();
 
-        const newStep = historyStep;
-        const img = new Image();
+            const snap = canvasRef.current.toDataURL();
+            
+            setRedoHistory(prev => {
+                const newArr = [...prev, snap];
+                return newArr;
+            });
 
-        img.onload = () => {
-            ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
-            ctx.drawImage(img, 0, 0);
+            img.onload = () => {
+                ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
+                ctx.drawImage(img, 0, 0);
+            };
+
+            img.src = undoHistory[undoHistory.length - 1];
+
+            setUndoHistory(prev => {
+                const newArr = [...prev];
+                
+                newArr.pop();
+                return newArr;
+            });
+
+            saveCanvas(noteId, img.src);
         }
-
-        const snap = canvasRef.current.toDataURL();
-
-        setRedoHistory(prev => [
-            ...prev,
-            snap
-        ]);
-
-        img.src = history[newStep];
-        setHistoryStep(newStep - 1);
-    
-        saveCanvas(noteId, img.src);
     };
 
     const redo = () => {
-        // if (historyStep >= 2 * history.length) return ;
-
-        // const newStep = historyStep;
-        // const img = new Image();
-
-        // img.onload = () => {
-        //     ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
-        //     ctx.drawImage(img, 0, 0);
-        // }
-
-        // img.src = history[newStep];
-        // setHistoryStep(newStep + 1);
-
-        // saveCanvas(noteId, img.src);
         if (redoHistory && redoHistory.length > 0) {
             const img = new Image();
+
+            const snap = canvasRef.current.toDataURL();
+
+            setUndoHistory(prev => {
+                const newArr = [...prev, snap];
+                return newArr;
+            })
 
             img.onload = () => {
                 ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
