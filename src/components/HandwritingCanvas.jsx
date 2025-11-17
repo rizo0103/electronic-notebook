@@ -4,6 +4,12 @@ import { VscDiscard, VscEdit, VscRedo, VscSymbolField } from 'react-icons/vsc';
 import { saveCanvas } from '../services/noteService';
 
 const modes = ['Handwriting', 'Eraser'];
+const colors = [
+    '#FFFFFF', '#000000', '#777777', '#E53935',
+    '#F06292', '#FFCDD2', '#FB8C00', '#FDD835',
+    '#FFEB3B', '#FFE0B2', '#1E88E5', '#BBDEFB',
+    '#8E24AA', '#E1BEE7', '#43A047', '#C8E6C9',
+];
 
 const HandwritingCanvas = ({ className, content, noteId }) => {
     const canvasRef = useRef(null);
@@ -17,6 +23,7 @@ const HandwritingCanvas = ({ className, content, noteId }) => {
     const [ undoHistory, setUndoHistory ] = useState(content ? [content] : []);
     const [ penColor, setPenColor ] = useState("#000000");
     const [ redoHistory, setRedoHistory ] = useState([]);
+    const [ penColorPicker, setPenColorPicker ] = useState(false);
 
     const loadImage = (ctx, content) => {
         const image = new Image();
@@ -172,6 +179,17 @@ const HandwritingCanvas = ({ className, content, noteId }) => {
         }
     }
 
+    function rgbToHex(rgb) {
+        const extracted = rgb.match(/\d+/g).map(Number); // [r, g, b]
+    
+        return (
+            "#" +
+            extracted
+                .map((x) => x.toString(16).padStart(2, "0"))
+                .join("")
+        );
+    }
+
     useEffect(() => {
         setupCanvas();
     }, []);
@@ -195,8 +213,19 @@ const HandwritingCanvas = ({ className, content, noteId }) => {
                 ></div>
             )}
             <div className="editor-toolbar">
-                <button className={`tool-btn ${mode === modes[0] ? 'active' : ''}`} title={modes[0]} onClick={() => handleToolbarButtonClick(modes[0])}> <VscEdit /> </button>
-                <button className={`tool-btn ${mode === modes[1] ? 'active' : ''}`} title={modes[1]} onClick={() => handleToolbarButtonClick(modes[1])}> <VscSymbolField /> </button>
+                <button className={`tool-btn ${mode === modes[0] ? 'active' : ''}`} title={modes[0]} onClick={() => handleToolbarButtonClick(modes[0])}> 
+                    <VscEdit /> 
+                </button>
+                <button className={`tool-btn ${mode === modes[1] ? 'active' : ''}`} title={modes[1]} onClick={() => handleToolbarButtonClick(modes[1])}> 
+                    <VscSymbolField /> 
+                </button>
+                <div className="color-picker" style={{ backgroundColor: penColor }} onClick={() => setPenColorPicker(!penColorPicker)}>
+                    <div className={`colors-dropdown ${penColorPicker ? 'open' : ''}`}>
+                        {colors && colors.map(item => (
+                            <div className="color" style={{ backgroundColor: item }} onClick={(e) => setPenColor(rgbToHex(e.target.style.backgroundColor))}></div>
+                        ))}
+                    </div>
+                </div>
                 <div className="cursor-size-control">
                     <label className="cursor-size-label">Cursor Size</label>
                     <div className="cursor-size-value">{penSize}</div>
