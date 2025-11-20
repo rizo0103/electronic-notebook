@@ -1,6 +1,6 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import React, { useEffect, useRef, useState } from 'react'
-import { VscDiscard, VscEdit, VscRedo, VscSymbolField, VscTrash } from 'react-icons/vsc';
+import { VscDiscard, VscEdit, VscMenu, VscRedo, VscSymbolField, VscTrash } from 'react-icons/vsc';
 import { saveCanvas } from '../services/noteService';
 
 const modes = ['Handwriting', 'Eraser'];
@@ -11,7 +11,7 @@ const colors = [
     '#8E24AA', '#E1BEE7', '#43A047', '#C8E6C9',
 ];
 
-const HandwritingCanvas = ({ className, content, noteId }) => {
+const HandwritingCanvas = ({ className, content, noteId, onOpenSidebar }) => {
     const canvasRef = useRef(null);
 
     const [ ctx, setCtx ] = useState(null);
@@ -226,27 +226,34 @@ const HandwritingCanvas = ({ className, content, noteId }) => {
                 ></div>
             )}
             <div className="editor-toolbar">
-                <button className={`tool-btn ${mode === modes[0] ? 'active' : ''}`} title={modes[0]} onClick={() => handleToolbarButtonClick(modes[0])}> 
-                    <VscEdit /> 
-                </button>
-                <button className={`tool-btn ${mode === modes[1] ? 'active' : ''}`} title={modes[1]} onClick={() => handleToolbarButtonClick(modes[1])}> 
-                    <VscSymbolField /> 
-                </button>
-                <div className="color-picker" style={{ backgroundColor: penColor }} onClick={() => setPenColorPicker(!penColorPicker)}>
-                    <div className={`colors-dropdown ${penColorPicker ? 'open' : ''}`}>
-                        {colors && colors.map(item => (
-                            <div className="color" style={{ backgroundColor: item }} onClick={(e) => setPenColor(rgbToHex(e.target.style.backgroundColor))}></div>
-                        ))}
+                <div className='left'>
+                    <button className='tool-btn' onClick={() => onOpenSidebar()}> <VscMenu /> </button>
+                </div>
+                <div className='middle'>
+                    <button className={`tool-btn ${mode === modes[0] ? 'active' : ''}`} title={modes[0]} onClick={() => handleToolbarButtonClick(modes[0])}> 
+                        <VscEdit /> 
+                    </button>
+                    <button className={`tool-btn ${mode === modes[1] ? 'active' : ''}`} title={modes[1]} onClick={() => handleToolbarButtonClick(modes[1])}> 
+                        <VscSymbolField /> 
+                    </button>
+                    <div className="color-picker" style={{ backgroundColor: penColor }} onClick={() => setPenColorPicker(!penColorPicker)}>
+                        <div className={`colors-dropdown ${penColorPicker ? 'open' : ''}`}>
+                            {colors && colors.map(item => (
+                                <div className="color" style={{ backgroundColor: item }} onClick={(e) => setPenColor(rgbToHex(e.target.style.backgroundColor))}></div>
+                            ))}
+                        </div>
                     </div>
+                    <div className="cursor-size-control">
+                        <label className="cursor-size-label">Cursor Size</label>
+                        <div className="cursor-size-value">{penSize}</div>
+                        <input type="range" min="1" max="50" value={penSize} onChange={(e) => {setPenSize(e.target.value)}} className="cursor-size-slider" />
+                    </div>
+                    <button className="tool-btn" onClick={undo}> <VscDiscard /> </button>
+                    <button className="tool-btn" onClick={redo}> <VscRedo /> </button>
                 </div>
-                <div className="cursor-size-control">
-                    <label className="cursor-size-label">Cursor Size</label>
-                    <div className="cursor-size-value">{penSize}</div>
-                    <input type="range" min="1" max="50" value={penSize} onChange={(e) => {setPenSize(e.target.value)}} className="cursor-size-slider" />
+                <div className='right'>
+                    <button className='tool-btn' onClick={clearAll}> <VscTrash /> </button>
                 </div>
-                <button className="tool-btn" onClick={undo}> <VscDiscard /> </button>
-                <button className="tool-btn" onClick={redo}> <VscRedo /> </button>
-                <button className='tool-btn' onClick={clearAll}> <VscTrash /> </button>
             </div>
             <canvas
                 style={{ touchAction: "none" }}

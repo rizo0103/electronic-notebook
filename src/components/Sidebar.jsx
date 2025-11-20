@@ -25,10 +25,9 @@ const Sidebar = ({ notes, activeNoteId, setActiveNoteId, onAddNote, onDeleteNote
         getFirstNote();
     }, []);
 
-    if (!isOpen) {
-        return <button className='sidebar-toggle' onClick={() => onOpenSidebar()}> <VscMenu /> </button>
-    }
-
+    // if (!isOpen) {
+    //     return ;
+    // }
 
     return (
         <aside ref={sidebarRef} className={`sidebar ${isOpen ? 'active' : ''}`}>
@@ -37,11 +36,13 @@ const Sidebar = ({ notes, activeNoteId, setActiveNoteId, onAddNote, onDeleteNote
             </div>
             <button className={`add-btn ${isOpen ? 'active' : ''}`} onClick={handleAddNote}>+ New Note</button>
             <NoteList
+                className={`note-list-component ${isOpen ? 'active' : ''}`}
                 notes={notes}
                 activeNoteId={noteId}
                 setActiveNoteId={setActiveNoteId}
                 onDeleteNote={onDeleteNote}
                 onRenameNote={onRenameNote}
+                isOpen={isOpen}
             />
         </aside>
     );

@@ -22,6 +22,14 @@ html,
 
 /* Sidebar */
 .sidebar {
+    position: absolute;
+    width: 0%;
+    height: 0%;
+    padding: 20px;
+    transition: all .5s ease-in-out;
+}
+
+.sidebar.active {
     width: 25%;
     height: 100%;
     background: #fff;
@@ -30,7 +38,7 @@ html,
     flex-direction: column;
     padding: 20px;
     position: absolute;
-    transition: all .75s ease-in-out;
+    transition: all .5s ease-in-out;
 }
 
 .sidebar-toggle {
@@ -46,6 +54,13 @@ html,
 }
 
 .logo {
+    opacity: 0;
+}
+
+.logo.active {
+    transition: opacity 1s ease-in-out;
+    opacity: 1;
+    justify-self: center;
     font-size: 22px;
     font-weight: 600;
     margin-bottom: 20px;
@@ -54,6 +69,12 @@ html,
 }
 
 .add-btn {
+    opacity: 0;
+}
+
+.add-btn.active {
+    transition: opacity 1s ease-in-out;
+    opacity: 1;
     background: #333;
     color: #fff;
     border: none;
@@ -61,7 +82,6 @@ html,
     font-weight: 500;
     border-radius: 6px;
     cursor: pointer;
-    transition: 0.2s;
 }
 
 .add-btn:hover {
@@ -69,6 +89,12 @@ html,
 }
 
 .note-list {
+    opacity: 0;
+}
+
+.note-list.active {
+    transition: opacity 1s ease-in-out;
+    opacity: 1;
     flex: 1;
     margin-top: 15px;
     overflow-y: auto;
@@ -160,7 +186,7 @@ html,
 .editor-toolbar {
     display: flex;
     align-items: center;
-    justify-content: center;
+    justify-content: space-around;
     gap: 10px;
     padding: 10px 14px;
     border: 1px solid #ddd;
@@ -168,6 +194,12 @@ html,
     background: #fff;
     margin-bottom: 12px;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.left, .middle, .right {
+    display: flex;
+    justify-content: center;
+    gap: 5px;
 }
 
 /* Individual tool buttons */

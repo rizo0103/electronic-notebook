@@ -3,7 +3,7 @@ import React, { useLayoutEffect, useState } from 'react';
 import HandwritingCanvas from './HandwritingCanvas';
 import { getAllNotes } from '../services/noteService';
 
-const Editor = ({ activeNote }) => {
+const Editor = ({ activeNote, onOpenSidebar }) => {
     const [ content, setContent ] = useState(activeNote ? activeNote.content : '');
     const [ noteId, setNoteId ] = useState(activeNote ? activeNote.id : 0);
 
@@ -27,6 +27,7 @@ const Editor = ({ activeNote }) => {
             key={noteId} // Re-mount canvas when note changes
             content={content}
             noteId={noteId}
+            onOpenSidebar={onOpenSidebar}
         />
     );
 };

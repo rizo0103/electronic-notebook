@@ -7,11 +7,12 @@ const NoteList = ({
     activeNoteId,
     setActiveNoteId,
     onDeleteNote,
-    onRenameNote
+    onRenameNote,
+    isOpen
 }) => {
 
     return (
-        <div className='note-list'>
+        <div className={`note-list ${isOpen && 'active'}`}>
             {notes.length > 0 ? (
                 notes.map(note => (
                     <div
