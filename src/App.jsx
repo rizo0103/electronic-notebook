@@ -1,5 +1,5 @@
 // src/App.jsx
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import "./App.css";
 import { useNotes } from "./hooks/useNotes";
 import Sidebar from "./components/Sidebar";
@@ -7,9 +7,34 @@ import Editor from "./components/Editor";
 
 function App() {
     const { notes, handleAddNote, handleDeleteNote, handleRenameNote, handleReloadNotes } = useNotes();
-    const [activeNoteId, setActiveNoteId] = useState(null);
+    const [ activeNoteId, setActiveNoteId ] = useState(null);
+    const [ isSidebarVisible, setIsSidebarVisible ] = useState(false);
+    const sidebarRef = useRef(null);
+    const sidebarOpenBtnRef = useRef(null);
 
     const activeNote = notes.find(note => note.id === activeNoteId);
+
+    const openSidebar = () => setIsSidebarVisible(true);
+    const closeSidebar = () => setIsSidebarVisible(false);
+
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (
+                sidebarRef.current &&
+                !sidebarRef.current.contains(event.target) &&
+                sidebarOpenBtnRef.current &&
+                !sidebarOpenBtnRef.current.contains(event.target) &&
+                isSidebarVisible
+            ) {
+                closeSidebar();
+            }
+        };
+
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+        };
+    }, [isSidebarVisible]);
 
     return (
         <main className="app-container">
@@ -20,11 +45,17 @@ function App() {
                 onAddNote={handleAddNote}
                 onDeleteNote={handleDeleteNote}
                 onRenameNote={handleRenameNote}
+                isOpen={isSidebarVisible}
+                onOpenSidebar={openSidebar}
+                onCloseSidebar={closeSidebar}
+                sidebarRef={sidebarRef}
+                sidebarOpenBtnRef={sidebarOpenBtnRef}
             />
             <Editor
                 key={activeNoteId} // Important: This resets the Editor when the note changes
                 activeNote={activeNote}
                 onNoteUpdate={handleReloadNotes}
+                onOpenSidebar={openSidebar}
             />
         </main>
     );

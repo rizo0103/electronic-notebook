@@ -1,6 +1,6 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import React, { useEffect, useRef, useState } from 'react'
-import { VscDiscard, VscEdit, VscRedo, VscSymbolField } from 'react-icons/vsc';
+import { VscDiscard, VscEdit, VscRedo, VscSymbolField, VscTrash } from 'react-icons/vsc';
 import { saveCanvas } from '../services/noteService';
 
 const modes = ['Handwriting', 'Eraser'];
@@ -179,6 +179,19 @@ const HandwritingCanvas = ({ className, content, noteId }) => {
         }
     }
 
+    const clearAll = () => {
+        const snap = canvasRef.current.toDataURL();
+
+        setUndoHistory(prev => {
+            const newArr = [...prev, snap];
+            return newArr;
+        });
+
+        ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
+        
+        saveCanvas(noteId, canvasRef.current.toDataURL());
+    };
+
     function rgbToHex(rgb) {
         const extracted = rgb.match(/\d+/g).map(Number); // [r, g, b]
     
@@ -233,6 +246,7 @@ const HandwritingCanvas = ({ className, content, noteId }) => {
                 </div>
                 <button className="tool-btn" onClick={undo}> <VscDiscard /> </button>
                 <button className="tool-btn" onClick={redo}> <VscRedo /> </button>
+                <button className='tool-btn' onClick={clearAll}> <VscTrash /> </button>
             </div>
             <canvas
                 style={{ touchAction: "none" }}
