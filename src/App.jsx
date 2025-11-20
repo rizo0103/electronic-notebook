@@ -19,13 +19,7 @@ function App() {
 
     useEffect(() => {
         const handleClickOutside = (event) => {
-            if (
-                sidebarRef.current &&
-                !sidebarRef.current.contains(event.target) &&
-                sidebarOpenBtnRef.current &&
-                !sidebarOpenBtnRef.current.contains(event.target) &&
-                isSidebarVisible
-            ) {
+            if (sidebarRef.current && !sidebarRef.current.contains(event.target)) {
                 closeSidebar();
             }
         };
